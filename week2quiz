@@ -1,0 +1,14 @@
+# Quiz 2
+# Question 1
+# install packeages - httr, httpuv(For Rstudio), jsonlite
+# Create new application in github. CallbackURL = 
+#
+myapp <- oauth_app("github", "ClientID#", "ClientSecret#")  
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+req <- GET("jleek repo URL", config(token = github_token))
+
+
+
+
+Question 2
+
