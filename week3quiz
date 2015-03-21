@@ -1,0 +1,55 @@
+# Getting and Cleaning Data
+# Week3 Quiz3
+
+# Download file from URL and rename
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FPUMSDataDict06.pdf"
+download.file(fileUrl,destfile="./data/quiz3.pdf",method="curl")
+
+
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv"
+download.file(fileUrl,destfile="./data/quiz3.csv",method="curl")
+
+#1
+data <- read.csv(./data/quiz.csv)
+agricultureLogical <- (data$ACR == 3 & data$AGS == 6)
+head(which(agricultureLogical), 3)
+
+#2
+library(jpeg)
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fjeff.jpg"
+download.file(fileUrl,destfile="./data/quiz3.jpg",method="curl")
+
+i <- readJPEG("./data/quiz3.jpg",native=TRUE)
+
+quantile(i,c(.30,.80))
+
+#3
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv"
+download.file(fileUrl,destfile="./data/quiz3_3.csv",method="curl")
+t2 <- read.csv("./data/quiz3_2.csv",header=F)
+
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv"
+download.file(fileUrl,destfile="./data/quiz3_3.csv",method="curl")
+t3 <- read.csv("./data/quiz3_3.csv")
+
+unique(t2$V1) #V1 = country code
+unique(t3$CountryCode)
+
+# create function: if V1 = CountryCode, then next row, else break -> calculate the total no. of matched row
+calc <- function (){  
+      n <- 0
+      for (i in t2$V1) {
+            for (j in t3$CountryCode) {
+                  if (i == j) {
+                        n= n + 1
+                        break
+                  }
+            }
+      }
+      return(n)
+}
+
+
+
+#4
+www
