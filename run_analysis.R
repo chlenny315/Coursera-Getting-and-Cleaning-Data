@@ -13,64 +13,75 @@ library(plyr)
 ## Step 1 
 ## Merges the training and the test sets to create one data set.
 ##########################################################################################
-# load train data
-x_train <- read.table("./UCI HAR Dataset/train/X_train.txt")
-y_train <- read.table("./UCI HAR Dataset/train/y_train.txt")
-subject_train <- read.table("./UCI HAR Dataset/train/subject_train.txt")
+# url of the dataset
+URL <- 'https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip'
+# root directory of the dataset
+DIR <- 'UCI HAR Dataset'
+# output filenames
+TIDY_FILENAME <- 'tidy.txt'
+AGGREGATED_FILENAME <- 'aggregated.txt'
 
-# load test data
-x_test <- read.table("./UCI HAR Dataset/test/X_test.txt")
-y_test <- read.table("./UCI HAR Dataset/test/y_test.txt")
-subject_test <- read.table("./UCI HAR Dataset/test/subject_test.txt")
+if (!file.exists(DIR)) {
+      message("No data set in wd. Downloading")
+      download.file(URL, 'dataset.zip', 'curl')
+      unzip('dataset.zip')
+}
+
+message('Reading data...')
+
+x.train <- read.table(file.path(DIR, 'train', 'X_train.txt'))
+y.train <- read.table(file.path(DIR, 'train', 'y_train.txt'))
+subj.train <- read.table(file.path(DIR, 'train', 'subject_train.txt'))
+x.test <- read.table(file.path(DIR, 'test', 'X_test.txt'))
+y.test <- read.table(file.path(DIR, 'test', 'y_test.txt'))
+subj.test <- read.table(file.path(DIR, 'test', 'subject_test.txt'))
+features <- read.table(file.path(DIR, 'features.txt'))
+activities <- read.table(file.path(DIR, 'activity_labels.txt'))
+
+message('Reading data is finished.')
 
 # Create x, y, subject dataset
-data_x <- join(x_test, x_train)
-data_y <- join(y_test, y_train)
-data_subject <- join(subject_test, subject_train)
+message('Binding train and test datasets.')
+x <- rbind(x.train, x.test)
+y <- rbind(y.train, y.test)
+subj <- rbind(subj.train, subj.test)
+
 
 ## Step 2 
 ## Extracts only the measurements on the mean and standard deviation for each measurement.
 ##########################################################################################
 
-features <- read.table("./UCI HAR Dataset/features.txt")[,2]
+message('Extract mean and standard deviation.')
 
-# extract only mean and std
-mean_n_std_features <- grep("mean|std", features)
+features.filter <- grep("-mean\\(\\)|-std\\(\\)",features[,2])
+x <- x[,features.filter]
+names(x) <- gsub("\\(|\\)","",tolower(features[features.filter, 2]))
 
-# subset mean and std columns
-data_x <- data_x[, mean_n_std_features]
-
-# change colume names
-names(data_x) <- features[mean_n_std_features]
 
 ## Step 3
 ## Use descriptive activity names to name the activities in the data set
 ##########################################################################################
 
-# load activity data
-activity_labels <- read.table("./UCI HAR Dataset/activity_labels.txt")[,2]
+message('Use descriptive activity names to name the activities in the data set.')
 
-# update values with correct activity names
-data_y[, 1] <- activity_labels[data_y[, 1], 2]
-
-# correct column name
-names(data_y) <- "activity"
+names(y) <- 'activity'
+y[,1] <- activities[y[,1],2]
 
 # Step 4
 # Appropriately label the data set with descriptive variable names
 ###############################################################################
 
-# correct column name
-names(data_subject) <- "subject"
- 
-# cbind data in one data set
-data_all <- cbind(data_x, data_y, data_subject)
-
 # Step 5
 # Create a second, independent tidy data set with the average of each variable for each activity and each subject
 ###############################################################################
 
-# 66 <- 68 columns but last two (activity & subject)
-averages_data <- ddply(data_all, .(subject, activity), function(x) colMeans(x[, 1:66]))
+message('Creating tidy dataset.')
+names(subj) <- 'subject'
+tidy <- cbind(subj, y, x)
 
-write.table(averages_data, "averages_data.txt", row.name=FALSE)
+message('Aggregating tidy dataset variables by activity and subject.')
+aggregated <- aggregate(tidy[3:68], by=list(subject = tidy$subject,activity = tidy$activity), FUN=mean)
+
+message('Writing tidy datasets')
+write.table(tidy, TIDY_FILENAME, row.names = FALSE)
+write.table(aggregated, AGGREGATED_FILENAME, row.names = FALSE)
