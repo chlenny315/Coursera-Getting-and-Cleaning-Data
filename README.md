@@ -34,6 +34,6 @@ The script contain a function run.analysis.R that perform jobs on:
 5. From the data set in step 4, creates a second, independent tidy data set with the average 
 of each variable for each activity and each subject.
 
-About the Code Book
+# About the Code Book
 +-------------------
 CodeBook.md file explains the transformations performed and the resulting data and variables.
